@@ -378,10 +378,9 @@ async function doTranslate(){
     document.getElementById('rJp').textContent=jp;
 
     // 발음 (로마자 → 한글 근사 표기)
-    let romaji='';
-    if(data[0][0][3]) romaji=data[0][0][3];
-    else if(data[0][0][2]) romaji=data[0][0][2];
-    document.getElementById('rRom').textContent=romaji||'▶ 버튼으로 발음을 들어보세요';
+    // 발음: jpToKr 변환 항상 적용 (Google 로마자는 보조)
+    const krPronun = jpToKr(jp);
+    document.getElementById('rRom').textContent = krPronun || '▶ 버튼으로 발음을 들어보세요';
 
     // 단어 설명 카드 생성
     const wordBox=document.getElementById('wordBreakdown');
