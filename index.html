@@ -410,23 +410,33 @@ async function doTranslate(){
       });
     }
 
-    if(wordsFound.length>0){
-      const tl={noun:'명사',verb:'동사',adj:'형용사',adv:'부사',particle:'조사',phrase:'표현',counter:'접미사'};
-      wordBox.innerHTML='<div class="wb-title">📚 단어 분석</div>'
-        +wordsFound.map(v=>`
+    // 3) vocab/사전에도 없으면 일본어 덩어리를 통째로 보여줌
+    if(wordsFound.length===0){
+      const chunks=[...jp.matchAll(/[぀-ヿ一-鿿ｦ-ﾟ０-９0-9]+/g)].map(m=>m[0]);
+      chunks.forEach(chunk=>{
+        if(chunk.length>=1){
+          wordsFound.push({jp:chunk,kr:'',reading:jpToKr(chunk),type:'phrase',note:'번역 결과',source:jp});
+        }
+      });
+    }
+
+    // 단어 분석 항상 표시
+    const tl={noun:'명사',verb:'동사',adj:'형용사',adv:'부사',particle:'조사',phrase:'표현',counter:'접미사'};
+    wordBox.innerHTML='<div class="wb-title">📚 단어 분석</div>'
+      +(wordsFound.length>0
+        ? wordsFound.map(v=>`
         <div class="wb-card">
           <div class="wb-top">
             <span class="wb-jp">${v.jp}</span>
             <span class="v-badge type-${v.type}">${tl[v.type]||v.type}</span>
           </div>
-          ${v.reading?`<div class="wb-read">${v.reading}</div>`:''}
-          <div class="wb-kr">${v.kr}</div>
+          ${v.reading?`<div class="wb-read">🔊 ${v.reading}</div>`:''}
+          ${v.kr?`<div class="wb-kr">${v.kr}</div>`:''}
           ${v.note?`<div class="wb-note">${v.note}</div>`:''}
           <button class="vp-btn" onclick="speak('${v.jp.replace(/'/g,"\\'")}')">▶ 발음</button>
-        </div>`).join('');
-    } else {
-      wordBox.innerHTML='<div class="wb-empty">단어 분석 결과가 없어요. 회화/단어 탭에서 관련 표현을 찾아보세요!</div>';
-    }
+        </div>`).join('')
+        : '<div class="wb-empty">단어를 분석할 수 없어요.</div>'
+      );
 
     const tip=document.getElementById('tTip');
     tip.textContent='💡 발음이 궁금하면 속도를 🐢 느리게 설정하고 들어보세요!';
