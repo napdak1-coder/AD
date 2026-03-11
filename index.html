@@ -91,6 +91,15 @@ mark{background:#fff3cd;color:var(--ink);border-radius:2px;padding:0 1px;}
 .v-src{font-size:10px;color:var(--border);margin-top:7px;border-top:1px solid var(--border);padding-top:5px;}
 .v-src span{color:var(--muted);}
 .vp-btn{display:inline-flex;align-items:center;gap:4px;margin-top:7px;padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:var(--paper);font-size:11px;color:var(--muted);cursor:pointer;font-family:'Noto Sans KR',sans-serif;-webkit-appearance:none;}
+/* WORD BREAKDOWN */
+.wb-title{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.wb-card{background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:8px;}
+.wb-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;}
+.wb-jp{font-family:'Noto Serif JP',serif;font-size:18px;color:var(--ink);}
+.wb-read{font-size:11px;color:var(--muted);font-style:italic;margin-bottom:3px;}
+.wb-kr{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:4px;}
+.wb-note{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.wb-empty{font-size:12px;color:var(--muted);text-align:center;padding:14px 0;}
 /* QUIZ */
 .q-ctrl{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
 .q-sel{flex:1;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--paper);font-family:'Noto Sans KR',sans-serif;font-size:13px;}
@@ -140,6 +149,7 @@ mark{background:#fff3cd;color:var(--ink);border-radius:2px;padding:0 1px;}
       <button class="speed-tog" onclick="cycleSpeed()">속도: <span id="speedLabel">보통</span></button>
     </div>
     <div class="t-tip" id="tTip" style="display:none"></div>
+    <div id="wordBreakdown" style="margin-top:14px"></div>
   </div>
 </div>
 
@@ -243,7 +253,110 @@ function playCard(jp,id){
   synth.speak(u);
 }
 
-// AI 번역
+// 일본어 → 한글 발음 변환 테이블
+const JP2KR = {
+  // 히라가나
+  'あ':'아','い':'이','う':'우','え':'에','お':'오',
+  'か':'카','き':'키','く':'쿠','け':'케','こ':'코',
+  'さ':'사','し':'시','す':'스','せ':'세','そ':'소',
+  'た':'타','ち':'치','つ':'츠','て':'테','と':'토',
+  'な':'나','に':'니','ぬ':'누','ね':'네','の':'노',
+  'は':'하','ひ':'히','ふ':'후','へ':'헤','ほ':'호',
+  'ま':'마','み':'미','む':'무','め':'메','も':'모',
+  'や':'야','ゆ':'유','よ':'요',
+  'ら':'라','り':'리','る':'루','れ':'레','ろ':'로',
+  'わ':'와','を':'오','ん':'ン',
+  'が':'가','ぎ':'기','ぐ':'구','げ':'게','ご':'고',
+  'ざ':'자','じ':'지','ず':'즈','ぜ':'제','ぞ':'조',
+  'だ':'다','ぢ':'지','づ':'즈','で':'데','ど':'도',
+  'ば':'바','び':'비','ぶ':'부','べ':'베','ぼ':'보',
+  'ぱ':'파','ぴ':'피','ぷ':'푸','ぺ':'페','ぽ':'포',
+  'きゃ':'キャ','きゅ':'キュ','きょ':'キョ',
+  'しゃ':'샤','しゅ':'슈','しょ':'쇼',
+  'ちゃ':'차','ちゅ':'츄','ちょ':'쵸',
+  'にゃ':'냐','にゅ':'뉴','にょ':'뇨',
+  'ひゃ':'햐','ひゅ':'휴','ひょ':'효',
+  'みゃ':'먀','みゅ':'뮤','みょ':'묘',
+  'りゃ':'랴','りゅ':'류','りょ':'료',
+  'ぎゃ':'갸','ぎゅ':'규','ぎょ':'교',
+  'じゃ':'자','じゅ':'주','じょ':'조',
+  'びゃ':'뱌','びゅ':'뷰','びょ':'뵤',
+  'ぴゃ':'퍄','ぴゅ':'퓨','ぴょ':'표',
+  'っ':'ッ',
+  // 가타카나
+  'ア':'아','イ':'이','ウ':'우','エ':'에','オ':'오',
+  'カ':'카','キ':'키','ク':'쿠','ケ':'케','コ':'코',
+  'サ':'사','シ':'시','ス':'스','セ':'세','ソ':'소',
+  'タ':'타','チ':'치','ツ':'츠','テ':'테','ト':'토',
+  'ナ':'나','ニ':'니','ヌ':'누','ネ':'네','ノ':'노',
+  'ハ':'하','ヒ':'히','フ':'후','ヘ':'헤','ホ':'호',
+  'マ':'마','ミ':'미','ム':'무','メ':'메','モ':'모',
+  'ヤ':'야','ユ':'유','ヨ':'요',
+  'ラ':'라','リ':'리','ル':'루','レ':'레','ロ':'로',
+  'ワ':'와','ヲ':'오','ン':'은',
+  'ガ':'가','ギ':'기','グ':'구','ゲ':'게','ゴ':'고',
+  'ザ':'자','ジ':'지','ズ':'즈','ゼ':'제','ゾ':'조',
+  'ダ':'다','ヂ':'지','ヅ':'즈','デ':'데','ド':'도',
+  'バ':'바','ビ':'비','ブ':'부','ベ':'베','ボ':'보',
+  'パ':'파','ピ':'피','プ':'푸','ペ':'페','ポ':'포',
+  'キャ':'캬','キュ':'큐','キョ':'쿄',
+  'シャ':'샤','シュ':'슈','ショ':'쇼',
+  'チャ':'차','チュ':'츄','チョ':'쵸',
+  'ニャ':'냐','ニュ':'뉴','ニョ':'뇨',
+  'ヒャ':'햐','ヒュ':'휴','ヒョ':'효',
+  'ミャ':'먀','ミュ':'뮤','ミョ':'묘',
+  'リャ':'랴','リュ':'류','リョ':'료',
+  'ギャ':'갸','ギュ':'규','ギョ':'교',
+  'ジャ':'자','ジュ':'주','ジョ':'조',
+  'ビャ':'뱌','ビュ':'뷰','ビョ':'뵤',
+  'ピャ':'퍄','ピュ':'퓨','ピョ':'표',
+  'ファ':'화','フィ':'휘','フェ':'훼','フォ':'훠',
+  'ウィ':'위','ウェ':'웨','ウォ':'워',
+  'ティ':'티','トゥ':'투','ディ':'디','ドゥ':'두',
+  'ッ':'ッ','ー':'ー','・':' ','　':' ',
+};
+
+function jpToKr(text){
+  let result = '';
+  let i = 0;
+  while(i < text.length){
+    // 2자 조합 먼저 체크
+    const two = text.slice(i, i+2);
+    if(JP2KR[two]){
+      result += JP2KR[two];
+      i += 2;
+    } else {
+      const one = text[i];
+      if(JP2KR[one]){
+        // っ/ッ 처리 (다음 자음 앞에 받침)
+        if(one === 'っ' || one === 'ッ'){
+          const next2 = text.slice(i+1, i+3);
+          const next1 = text[i+1];
+          const nextKr = JP2KR[next2] || JP2KR[next1] || '';
+          if(nextKr) result += nextKr[0];
+          else result += '';
+        }
+        // ン/ん 처리
+        else if(one === 'ン' || one === 'ん'){
+          result += '은';
+        }
+        // ー 처리 (장음)
+        else if(one === 'ー'){
+          result += '-';
+        }
+        else {
+          result += JP2KR[one];
+        }
+      } else {
+        result += one;
+      }
+      i++;
+    }
+  }
+  return result;
+}
+
+// 번역 (Google 무료 API — 발음 + 단어 설명 포함)
 let lastJp='';
 async function doTranslate(){
   const input=document.getElementById('krInput').value.trim();
@@ -253,38 +366,80 @@ async function doTranslate(){
   const result=document.getElementById('tResult');
   btn.disabled=true;loading.style.display='flex';result.style.display='none';
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        messages:[{role:'user',content:`당신은 한국어를 일본어로 번역하는 전문가입니다. 럭셔리 쇼핑몰 직원이 일본인 손님에게 말하는 상황입니다. 정중하고 자연스러운 일본어로 번역해주세요.
-
-반드시 아래 JSON 형식으로만 답변하세요 (마크다운, 코드블록 없이 순수 JSON만):
-{"japanese":"일본어 번역","reading":"한글 발음 표기","tip":"짧은 팁 (없으면 빈 문자열)"}
-
-번역할 한국어: ${input}`}]
-      })
-    });
+    // Google 비공식 API (키 불필요, 발음+번역 동시)
+    const url='https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=ja&dt=t&dt=rm&dt=bd&q='+encodeURIComponent(input);
+    const res=await fetch(url);
     const data=await res.json();
-    const text=data.content[0].text.trim().replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(text);
-    lastJp=parsed.japanese;
-    document.getElementById('rJp').textContent=parsed.japanese;
-    document.getElementById('rRom').textContent=parsed.reading;
+
+    // 번역 결과
+    const jp=data[0].map(seg=>seg[0]).join('');
+    if(!jp)throw new Error('no translation');
+    lastJp=jp;
+    document.getElementById('rJp').textContent=jp;
+
+    // 발음 (로마자 → 한글 근사 표기)
+    let romaji='';
+    if(data[0][0][3]) romaji=data[0][0][3];
+    else if(data[0][0][2]) romaji=data[0][0][2];
+    document.getElementById('rRom').textContent=romaji||'▶ 버튼으로 발음을 들어보세요';
+
+    // 단어 설명 카드 생성
+    const wordBox=document.getElementById('wordBreakdown');
+    wordBox.innerHTML='';
+    let wordsFound=[];
+
+    // 1) vocab DB에서 매칭
+    vocab.forEach(v=>{
+      if(jp.includes(v.jp)){
+        wordsFound.push(v);
+      }
+    });
+
+    // 2) Google 사전 데이터(bd)에서 추가 단어
+    if(data[1]&&Array.isArray(data[1])){
+      data[1].forEach(entry=>{
+        const pos=entry[0]||'';
+        const words=entry[1]||[];
+        words.forEach(w=>{
+          // 이미 vocab에 있으면 스킵
+          if(!wordsFound.find(v=>v.jp===w)){
+            if(jp.includes(w)&&w.length>1){
+              wordsFound.push({jp:w,kr:entry[2]&&entry[2][0]?entry[2][0][0]:'',reading:'',type:'phrase',note:pos?'품사: '+pos:'',source:jp});
+            }
+          }
+        });
+      });
+    }
+
+    if(wordsFound.length>0){
+      const tl={noun:'명사',verb:'동사',adj:'형용사',adv:'부사',particle:'조사',phrase:'표현',counter:'접미사'};
+      wordBox.innerHTML='<div class="wb-title">📚 단어 분석</div>'
+        +wordsFound.map(v=>`
+        <div class="wb-card">
+          <div class="wb-top">
+            <span class="wb-jp">${v.jp}</span>
+            <span class="v-badge type-${v.type}">${tl[v.type]||v.type}</span>
+          </div>
+          ${v.reading?`<div class="wb-read">${v.reading}</div>`:''}
+          <div class="wb-kr">${v.kr}</div>
+          ${v.note?`<div class="wb-note">${v.note}</div>`:''}
+          <button class="vp-btn" onclick="speak('${v.jp.replace(/'/g,"\\'")}')">▶ 발음</button>
+        </div>`).join('');
+    } else {
+      wordBox.innerHTML='<div class="wb-empty">단어 분석 결과가 없어요. 회화/단어 탭에서 관련 표현을 찾아보세요!</div>';
+    }
+
     const tip=document.getElementById('tTip');
-    if(parsed.tip){tip.textContent='💡 '+parsed.tip;tip.style.display='block';}
-    else tip.style.display='none';
+    tip.textContent='💡 발음이 궁금하면 속도를 🐢 느리게 설정하고 들어보세요!';
+    tip.style.display='block';
     result.style.display='block';
     setTimeout(()=>playTranslated(),400);
   }catch(e){
-    alert('번역 오류가 발생했어요. 다시 시도해주세요.');
+    alert('번역 오류가 발생했어요.\n인터넷 연결을 확인하고 다시 시도해주세요.');
   }finally{
     btn.disabled=false;loading.style.display='none';
   }
 }
-
 function playTranslated(){
   if(!lastJp)return;
   const b=document.getElementById('ttsBtn');
