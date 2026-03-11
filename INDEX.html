@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>일본어 학습</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1410;--paper:#f7f3ee;--red:#c0392b;--red-light:#fdf0ee;--gold:#b5890a;--muted:#7a6f65;--border:#d9cfc5;--card:#ffffff;--shadow:rgba(26,20,16,0.08);--green:#1a7a4a;--green-light:#eef7f2;--blue:#1a4a8a;--blue-light:#eef2fa;--purple:#6a1a8a;--purple-light:#f5eefa;--orange:#b55a10;--orange-light:#fdf3ee;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--paper);color:var(--ink);font-family:'Noto Sans KR',sans-serif;padding:20px 14px 60px;font-size:15px;}
+header{text-align:center;margin-bottom:24px;}
+h1{font-family:'Noto Serif JP',serif;font-size:20px;font-weight:600;line-height:1.4;}
+h1 span{display:block;font-size:11px;font-family:'Noto Sans KR',sans-serif;font-weight:300;color:var(--muted);letter-spacing:.1em;margin-top:4px;}
+.tabs{display:flex;gap:6px;border-bottom:2px solid var(--border);margin-bottom:20px;}
+.tab-btn{flex:1;padding:9px 4px;border:none;background:none;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;border-radius:6px 6px 0 0;transition:all .2s;}
+.tab-btn.active{color:var(--red);border-bottom-color:var(--red);background:var(--red-light);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.voice-status{text-align:center;margin-bottom:16px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;}
+.voice-status.ok{background:var(--green-light);color:var(--green);}
+.voice-status.warn{background:#fff8e1;color:#8a6d00;}
+.global-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;align-items:center;}
+.global-controls label{font-size:12px;font-weight:500;color:var(--muted);}
+.speed-select{padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--paper);font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--ink);}
+.play-all-btn{padding:7px 14px;border-radius:20px;border:none;background:var(--ink);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:500;cursor:pointer;}
+.stop-btn{padding:7px 12px;border-radius:20px;border:1px solid var(--border);background:var(--paper);color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:12px;cursor:pointer;}
+.section-label{display:flex;align-items:center;gap:8px;margin:20px 0 10px;}
+.section-label span{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);white-space:nowrap;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.phrase-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 14px 12px;margin-bottom:10px;box-shadow:0 2px 6px var(--shadow);position:relative;overflow:hidden;}
+.phrase-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--border);border-radius:12px 0 0 12px;}
+.card-category{font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+.card-korean{font-size:14px;font-weight:500;color:var(--ink);line-height:1.5;margin-bottom:8px;}
+.card-divider{height:1px;background:var(--border);margin-bottom:8px;}
+.card-japanese{font-family:'Noto Serif JP',serif;font-size:16px;color:var(--red);line-height:1.6;margin-bottom:3px;}
+.card-romanji{font-size:11px;color:var(--muted);font-style:italic;margin-bottom:10px;}
+.play-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border:none;border-radius:20px;background:var(--red);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;-webkit-appearance:none;}
+.play-btn.playing{background:var(--green);}
+/* VOCAB */
+.vocab-intro{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;line-height:1.8;color:var(--muted);}
+.vocab-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 5px var(--shadow);}
+.vocab-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.vocab-japanese{font-family:'Noto Serif JP',serif;font-size:20px;color:var(--ink);}
+.vocab-type-badge{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-top:3px;}
+.type-noun{background:var(--blue-light);color:var(--blue);}
+.type-verb{background:var(--green-light);color:var(--green);}
+.type-adj{background:var(--purple-light);color:var(--purple);}
+.type-adv{background:var(--orange-light);color:var(--orange);}
+.type-particle{background:#f3f3f3;color:#555;}
+.type-phrase{background:var(--red-light);color:var(--red);}
+.type-counter{background:#fff8e1;color:#8a6d00;}
+.vocab-reading{font-size:11px;color:var(--muted);margin-bottom:4px;font-style:italic;}
+.vocab-korean{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:6px;}
+.vocab-note{font-size:11.5px;color:var(--muted);line-height:1.6;}
+.vocab-source{font-size:10px;color:var(--border);margin-top:8px;border-top:1px solid var(--border);padding-top:5px;}
+.vocab-source span{color:var(--muted);}
+.vocab-play-btn{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--paper);font-size:11px;color:var(--muted);cursor:pointer;font-family:'Noto Sans KR',sans-serif;-webkit-appearance:none;}
+/* QUIZ */
+.quiz-controls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.quiz-mode-select{flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--paper);font-family:'Noto Sans KR',sans-serif;font-size:13px;}
+.quiz-start-btn{padding:8px 18px;border-radius:20px;border:none;background:var(--red);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:600;cursor:pointer;-webkit-appearance:none;}
+.quiz-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 16px;text-align:center;box-shadow:0 2px 10px var(--shadow);min-height:240px;display:flex;flex-direction:column;justify-content:center;}
+.quiz-prompt{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.quiz-question{font-size:17px;font-weight:500;color:var(--ink);margin-bottom:20px;line-height:1.6;}
+.quiz-question.japanese{font-family:'Noto Serif JP',serif;font-size:22px;color:var(--red);}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:420px;margin:0 auto;}
+.quiz-option{padding:11px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper);font-family:'Noto Sans KR',sans-serif;font-size:12.5px;cursor:pointer;transition:all .15s;text-align:left;-webkit-appearance:none;}
+.quiz-option.correct{border-color:var(--green);background:var(--green-light);color:var(--green);font-weight:600;}
+.quiz-option.wrong{border-color:var(--red);background:var(--red-light);color:var(--red);}
+.quiz-feedback{margin-top:16px;font-size:13px;font-weight:500;padding:8px 16px;border-radius:8px;display:inline-block;}
+.quiz-feedback.correct{background:var(--green-light);color:var(--green);}
+.quiz-feedback.wrong{background:var(--red-light);color:var(--red);}
+.quiz-next-btn{margin-top:12px;padding:8px 20px;border-radius:20px;border:none;background:var(--ink);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;cursor:pointer;display:none;-webkit-appearance:none;}
+.quiz-next-btn.visible{display:inline-block;}
+.now-playing{font-size:11px;color:var(--muted);margin-top:6px;text-align:center;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛍️ NOBLECOCO 일본어 학습<span>接客フレーズ · 音声 · 単語</span></h1>
+</header>
+<div id="voiceStatus" class="voice-status warn">🔄 음성 준비 중...</div>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('phrases',this)">🎧 회화</button>
+  <button class="tab-btn" onclick="switchTab('vocab',this)">📖 단어</button>
+  <button class="tab-btn" onclick="switchTab('quiz',this)">🎯 퀴즈</button>
+</div>
+
+<div id="tab-phrases" class="tab-panel active">
+  <div class="global-controls">
+    <label>속도</label>
+    <select class="speed-select" id="globalSpeed" onchange="globalSpeed=parseFloat(this.value)">
+      <option value="0.6">🐢 느리게</option>
+      <option value="0.8">🚶 보통느리게</option>
+      <option value="1.0" selected>▶️ 보통</option>
+      <option value="1.2">🏃 빠르게</option>
+    </select>
+    <button class="play-all-btn" onclick="playAll()">▶ 전체듣기</button>
+    <button class="stop-btn" onclick="stopAll()">⏹ 정지</button>
+  </div>
+  <div class="now-playing" id="nowPlaying"></div>
+  <div id="phraseSections"></div>
+</div>
+
+<div id="tab-vocab" class="tab-panel">
+  <div class="vocab-intro">각 문장의 핵심 단어를 품사별로 분류했어요. 단어를 탭하면 발음을 들을 수 있어요!</div>
+  <div id="vocabGrid"></div>
+</div>
+
+<div id="tab-quiz" class="tab-panel">
+  <div class="quiz-controls">
+    <select class="quiz-mode-select" id="quizMode">
+      <option value="jp2kr">🇯🇵 일본어 → 한국어</option>
+      <option value="kr2jp">🇰🇷 한국어 → 일본어</option>
+      <option value="audio">🎧 음성 → 한국어</option>
+    </select>
+    <button class="quiz-start-btn" onclick="startQuiz()">시작</button>
+  </div>
+  <div class="quiz-box" id="quizBox">
+    <div class="quiz-prompt">모드 선택 후 시작을 누르세요</div>
+    <div class="quiz-question">문제가 여기에 표시됩니다</div>
+  </div>
+</div>
+
+<script>
+const sections=[{label:"인사 · 응대",phrases:[{cat:"인사/인원",kr:"어서 오세요, 두 분이신가요?",jp:"いらっしゃいませ、お二人様ですか？",rom:"이랏샤이마세, 오후타리사마데스카?"},{cat:"배웅 인사",kr:"안녕히 가세요",jp:"お気をつけて",rom:"오키오츠케테"}]},{label:"피팅 · 제품",phrases:[{cat:"피팅 제안",kr:"한번 입어보세요",jp:"試着してみてください",rom:"시차쿠 시테미테 쿠다사이"},{cat:"제품 추천",kr:"잘 어울려요",jp:"似合っています",rom:"니아엣테이마스"},{cat:"재고 안내",kr:"다른 사이즈도 있어요",jp:"他のサイズもあります",rom:"호카노 사이즈모 아리마스"},{cat:"사이즈 안내",kr:"오트리는 10단위로 나와요",jp:"オートリーは10単位で出ています",rom:"오-토리-와 쥬-탄이데 데테이마스"}]},{label:"가격 · 결제",phrases:[{cat:"가격 안내",kr:"스톤아일랜드 저렴해요",jp:"ストーンアイランド、安いです",rom:"스토-온 아이란도, 야스이데스"},{cat:"가격 이유",kr:"일본보다 훨씬 싸요",jp:"日本よりずっと安いです",rom:"니혼요리 즛토 야스이데스"},{cat:"결제 확인",kr:"구매하시는 건가요?",jp:"こちらにされますか？",rom:"코치라니 사레마스카?"}]},{label:"칭찬 필살기 💘",phrases:[{cat:"특별 칭찬",kr:"봤던 일본 사람 중 가장 예뻐요",jp:"今まで会った日本人の中で一番綺麗です",rom:"이마마데 앗타 니혼진노 나카데 이치반 키레이데스"},{cat:"남성 칭찬",kr:"정말 잘생기셨어요",jp:"本当にカッコいいですね！",rom:"혼토-니 칵코이이데스네!"},{cat:"함께 칭찬",kr:"두 분 다 너무 예뻐요!",jp:"お二人とも、とても綺麗です！",rom:"오후타리토모, 토테모 키레이데스!"},{cat:"외모 칭찬",kr:"얼굴이 정말 작으시네요!",jp:"顔がとても小さいですね！",rom:"카오가 토테모 치이사이데스네!"},{cat:"피부 칭찬",kr:"피부가 정말 깨끗해요!",jp:"肌がとても綺麗です！",rom:"하다가 토테모 키레이데스!"},{cat:"스타일 칭찬",kr:"옷이랑 스타일이 너무 좋아요!",jp:"服もスタイルもとても良いです！",rom:"후쿠모 스타이루모 토테모 이이데스!"},{cat:"강조하기",kr:"아니요, 진짜예요!",jp:"いいえ、本当ですよ！",rom:"이이에, 혼토-데스요!"}]}];
+const vocab=[{jp:"いらっしゃいませ",reading:"이랏샤이마세",kr:"어서 오세요",type:"phrase",note:"손님 맞이 정형 표현. いらっしゃる의 명령형.",source:"いらっしゃいませ、お二人様ですか？"},{jp:"お二人様",reading:"오후타리사마",kr:"두 분 (경어)",type:"noun",note:"二人(두 명)+お~様(경칭). 손님에게 쓰는 정중한 표현.",source:"いらっしゃいませ、お二人様ですか？"},{jp:"お気をつけて",reading:"오키오츠케테",kr:"조심히 가세요",type:"phrase",note:"気をつける(조심하다)의 경어 명령형. 배웅 관용 표현.",source:"お気をつけて"},{jp:"試着",reading:"시차쿠",kr:"피팅, 착용해보기",type:"noun",note:"試(시도)+着(입다). 의류를 입어보는 행위.",source:"試着してみてください"},{jp:"してみてください",reading:"시테미테 쿠다사이",kr:"~해 보세요",type:"phrase",note:"してみる(해보다)+ください(주세요). 권유 표현.",source:"試着してみてください"},{jp:"似合う",reading:"니아우",kr:"어울리다",type:"verb",note:"외모·옷이 잘 맞다. 似合っています = 어울려요.",source:"似合っています"},{jp:"他",reading:"호카",kr:"다른, 그 외",type:"noun",note:"他のサイズ = 다른 사이즈.",source:"他のサイズもあります"},{jp:"あります",reading:"아리마스",kr:"있습니다 (사물)",type:"verb",note:"ある의 정중형. 사물 존재 표현. 사람엔 います 사용.",source:"他のサイズもあります"},{jp:"単位",reading:"탄이",kr:"단위",type:"counter",note:"10単位 = 10씩. 사이즈가 46, 56... 식으로 오른다는 뜻.",source:"オートリーは10単位で出ています"},{jp:"安い",reading:"야스이",kr:"싸다, 저렴하다",type:"adj",note:"い형용사. ↔ 高い(비싸다).",source:"ストーンアイランド、安いです"},{jp:"日本",reading:"니혼",kr:"일본",type:"noun",note:"にほん 또는 にっぽん 두 발음 모두 사용.",source:"日本よりずっと安いです"},{jp:"より",reading:"요리",kr:"~보다",type:"particle",note:"비교 조사. 日本より = 일본보다.",source:"日本よりずっと安いです"},{jp:"ずっと",reading:"즛토",kr:"훨씬",type:"adv",note:"비교 강조 부사. ずっと安い = 훨씬 싸다.",source:"日本よりずっと安いです"},{jp:"こちら",reading:"코치라",kr:"이쪽, 이것 (정중)",type:"noun",note:"これ보다 격식 있는 표현. 상품 가리킬 때 사용.",source:"こちらにされますか？"},{jp:"されますか",reading:"사레마스카",kr:"하시겠습니까?",type:"phrase",note:"する의 존경어. こちらにされますか = 이것으로 하시겠습니까?",source:"こちらにされますか？"},{jp:"今まで",reading:"이마마데",kr:"지금까지",type:"adv",note:"今(지금)+まで(~까지). 과거~현재 경험 표현.",source:"今まで会った日本人の中で一番綺麗です"},{jp:"会う",reading:"아우",kr:"만나다",type:"verb",note:"会った = 과거형(만났다). う동사.",source:"今まで会った日本人の中で一番綺麗です"},{jp:"の中で",reading:"노 나카데",kr:"~중에서",type:"particle",note:"범위 표현. 日本人の中で = 일본인 중에서.",source:"今まで会った日本人の中で一番綺麗です"},{jp:"一番",reading:"이치반",kr:"가장, 제일",type:"adv",note:"최상급. 一番 + 형용사 = 가장 ~하다.",source:"今まで会った日本人の中で一番綺麗です"},{jp:"綺麗",reading:"키레이",kr:"예쁘다 / 깨끗하다",type:"adj",note:"な형용사. 외모와 청결함 모두 표현.",source:"今まで会った日本人の中で一番綺麗です"},{jp:"本当に",reading:"혼토-니",kr:"정말로",type:"adv",note:"강조 부사. 本当ですよ = 진짜예요!",source:"本当にカッコいいですね！"},{jp:"カッコいい",reading:"칵코이이",kr:"잘생기다, 멋있다",type:"adj",note:"格好(모습)+いい(좋다). 남성 칭찬 표현.",source:"本当にカッコいいですね！"},{jp:"とても",reading:"토테모",kr:"매우, 정말",type:"adv",note:"강조 부사. とても + 형용사.",source:"お二人とも、とても綺麗です！"},{jp:"顔",reading:"카오",kr:"얼굴",type:"noun",note:"顔が小さい = 얼굴이 작다. 일본에서 큰 칭찬!",source:"顔がとても小さいですね！"},{jp:"小さい",reading:"치이사이",kr:"작다",type:"adj",note:"↔ 大きい(크다). 顔が小さい는 미의 기준.",source:"顔がとても小さいですね！"},{jp:"肌",reading:"하다",kr:"피부",type:"noun",note:"皮膚보다 감성적 표현. 肌が綺麗 = 피부 깨끗.",source:"肌がとても綺麗です！"},{jp:"服",reading:"후쿠",kr:"옷",type:"noun",note:"服も～も = 옷도 ~도. も는 병렬 조사.",source:"服もスタイルもとても良いです！"},{jp:"スタイル",reading:"스타이루",kr:"스타일, 몸매",type:"noun",note:"영어 style의 외래어.",source:"服もスタイルもとても良いです！"},{jp:"良い",reading:"이이",kr:"좋다",type:"adj",note:"い형용사. 회화에서 いい로 발음.",source:"服もスタイルもとても良いです！"},{jp:"いいえ",reading:"이이에",kr:"아니요",type:"phrase",note:"부정 응답. 칭찬 강조 시 역설적으로 사용.",source:"いいえ、本当ですよ！"}];
+
+let synth=window.speechSynthesis,japaneseVoice=null,globalSpeed=1.0,isPlayingAll=false,playQueue=[],qIdx=0;
+
+function findVoice(){
+  const v=synth.getVoices().filter(v=>v.lang&&v.lang.startsWith('ja'));
+  if(v.length>0){
+    japaneseVoice=v.find(x=>x.name.includes('Kyoko')||x.name.includes('O-ren')||x.name.includes('Otoya'))||v[0];
+    document.getElementById('voiceStatus').textContent='✅ 일본어 음성 준비 완료 ('+japaneseVoice.name+')';
+    document.getElementById('voiceStatus').className='voice-status ok';
+  }else{
+    document.getElementById('voiceStatus').textContent='⚠️ 설정 > 손쉬운 사용 > 스피치 > 목소리 추가 > 일본어 설치 필요';
+    document.getElementById('voiceStatus').className='voice-status warn';
+  }
+}
+synth.onvoiceschanged=findVoice;
+setTimeout(findVoice,600);
+
+function speak(text,rate,cb){
+  synth.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ja-JP';u.rate=rate||globalSpeed;
+  if(japaneseVoice)u.voice=japaneseVoice;
+  if(cb)u.onend=cb;
+  synth.speak(u);
+}
+
+function playPhrase(jp,id){
+  synth.cancel();
+  const btn=document.getElementById(id);
+  if(btn){btn.textContent='🔊 재생 중...';btn.classList.add('playing');}
+  const u=new SpeechSynthesisUtterance(jp);
+  u.lang='ja-JP';u.rate=globalSpeed;
+  if(japaneseVoice)u.voice=japaneseVoice;
+  u.onend=()=>{if(btn){btn.textContent='▶ 듣기';btn.classList.remove('playing');}};
+  synth.speak(u);
+}
+
+function stopAll(){synth.cancel();isPlayingAll=false;document.getElementById('nowPlaying').textContent='';}
+
+function playAll(){
+  stopAll();isPlayingAll=true;playQueue=[];
+  sections.forEach(s=>s.phrases.forEach(p=>playQueue.push(p)));
+  qIdx=0;playNext();
+}
+function playNext(){
+  if(!isPlayingAll||qIdx>=playQueue.length){isPlayingAll=false;document.getElementById('nowPlaying').textContent='';return;}
+  const p=playQueue[qIdx];
+  document.getElementById('nowPlaying').textContent='▶ '+p.cat+': '+p.kr;
+  speak(p.jp,globalSpeed,()=>{qIdx++;setTimeout(playNext,700);});
+}
+
+const typeLabels={noun:'명사',verb:'동사',adj:'형용사',adv:'부사',particle:'조사',phrase:'표현',counter:'접미사'};
+
+function renderPhrases(){
+  const c=document.getElementById('phraseSections');c.innerHTML='';
+  sections.forEach((sec,si)=>{
+    const lbl=document.createElement('div');lbl.className='section-label';
+    lbl.innerHTML='<span>'+sec.label+'</span>';c.appendChild(lbl);
+    sec.phrases.forEach((p,pi)=>{
+      const id='pb-'+si+'-'+pi;
+      const card=document.createElement('div');card.className='phrase-card';
+      card.innerHTML='<div class="card-category">'+p.cat+'</div>'
+        +'<div class="card-korean">'+p.kr+'</div>'
+        +'<div class="card-divider"></div>'
+        +'<div class="card-japanese">'+p.jp+'</div>'
+        +'<div class="card-romanji">'+p.rom+'</div>'
+        +'<button class="play-btn" id="'+id+'" onclick="playPhrase(\''+p.jp.replace(/'/g,"\\'")+'\',' +'\''+id+'\')">▶ 듣기</button>';
+      c.appendChild(card);
+    });
+  });
+}
+
+function renderVocab(){
+  const g=document.getElementById('vocabGrid');g.innerHTML='';
+  vocab.forEach((v,i)=>{
+    const id='vb-'+i;
+    const card=document.createElement('div');card.className='vocab-card';
+    card.innerHTML='<div class="vocab-top"><div class="vocab-japanese">'+v.jp+'</div>'
+      +'<span class="vocab-type-badge type-'+v.type+'">'+typeLabels[v.type]+'</span></div>'
+      +'<div class="vocab-reading">'+v.reading+'</div>'
+      +'<div class="vocab-korean">'+v.kr+'</div>'
+      +'<div class="vocab-note">'+v.note+'</div>'
+      +'<div class="vocab-source">출처: <span>'+v.source+'</span></div>'
+      +'<button class="vocab-play-btn" onclick="speak(\''+v.jp.replace(/'/g,"\\'")+'\')" >▶ 발음</button>';
+    g.appendChild(card);
+  });
+}
+
+let allPhrases=[];sections.forEach(s=>s.phrases.forEach(p=>allPhrases.push(p)));
+let quizScore=0,quizTotal=0,quizCurrent=null,quizAnswered=false;
+
+function startQuiz(){quizScore=0;quizTotal=0;nextQuestion();}
+function nextQuestion(){
+  quizAnswered=false;
+  const mode=document.getElementById('quizMode').value;
+  const idx=Math.floor(Math.random()*allPhrases.length);
+  quizCurrent=allPhrases[idx];
+  let pool=allPhrases.filter((_,i)=>i!==idx);
+  let wrongs=[];
+  while(wrongs.length<3&&pool.length>0){const wi=Math.floor(Math.random()*pool.length);wrongs.push(pool.splice(wi,1)[0]);}
+  let qHtml='',options=[];
+  if(mode==='jp2kr'){
+    qHtml='<div class="quiz-question japanese">'+quizCurrent.jp+'</div><div style="color:var(--muted);font-size:11px;margin-top:-14px;margin-bottom:14px">'+quizCurrent.rom+'</div>';
+    options=[quizCurrent.kr,...wrongs.map(w=>w.kr)].sort(()=>Math.random()-.5);
+  }else if(mode==='kr2jp'){
+    qHtml='<div class="quiz-question">'+quizCurrent.kr+'</div>';
+    options=[quizCurrent.jp,...wrongs.map(w=>w.jp)].sort(()=>Math.random()-.5);
+  }else{
+    qHtml='<div class="quiz-question">🔊 음성을 듣고 맞는 한국어를 고르세요</div>';
+    options=[quizCurrent.kr,...wrongs.map(w=>w.kr)].sort(()=>Math.random()-.5);
+    setTimeout(()=>speak(quizCurrent.jp),300);
+  }
+  quizTotal++;
+  const box=document.getElementById('quizBox');
+  const correct=mode==='kr2jp'?quizCurrent.jp:quizCurrent.kr;
+  box.innerHTML='<div class="quiz-prompt">문제 '+quizTotal+' · 점수: '+quizScore+'/'+(quizTotal-1)+'</div>'
+    +qHtml
+    +'<div class="quiz-options">'
+    +options.map((o,i)=>'<button class="quiz-option" onclick="checkAnswer(this,\''+o.replace(/'/g,"\\'").replace(/\"/g,'&quot;')+'\',' +'\''+correct.replace(/'/g,"\\'").replace(/\"/g,'&quot;')+'\')">' +o+'</button>').join('')
+    +'</div>'
+    +'<div id="qfb"></div>'
+    +'<button class="quiz-next-btn" id="qnb" onclick="nextQuestion()">다음 문제 →</button>'
+    +(mode==='audio'?'<br><button onclick="speak(\''+quizCurrent.jp.replace(/'/g,"\\'")+'\',globalSpeed)" style="margin-top:8px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--paper);font-size:11px;cursor:pointer;">🔊 다시 듣기</button>':'');
+}
+
+function checkAnswer(btn,selected,correct){
+  if(quizAnswered)return;
+  quizAnswered=true;
+  const isOk=selected===correct;
+  if(isOk)quizScore++;
+  document.querySelectorAll('.quiz-option').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+    else if(b===btn&&!isOk)b.classList.add('wrong');
+  });
+  const fb=document.getElementById('qfb');
+  fb.className='quiz-feedback '+(isOk?'correct':'wrong');
+  fb.textContent=isOk?'🎉 정답!':'❌ 오답 — 정답: '+correct;
+  document.getElementById('qnb').classList.add('visible');
+}
+
+function switchTab(name,el){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  el.classList.add('active');
+}
+
+renderPhrases();
+renderVocab();
+</script>
+</body>
+</html>
